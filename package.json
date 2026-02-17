@@ -1,0 +1,16 @@
+{
+  "name": "mstarbot",
+  "version": "1.0.0",
+  "description": "MSTARBOT by Mr. Emmanuel 🌹 - Full WhatsApp Bot",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "^7.0.0",
+    "@hapi/boom": "^10.0.1",
+    "pino": "^9.5.0",
+    "axios": "^1.7.7"
+  }
+}
