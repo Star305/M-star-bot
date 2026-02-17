@@ -4,8 +4,8 @@ const pino = require('pino');
 const axios = require('axios');
 const fs = require('fs');
 
-const PHONE_NUMBER = '234'; // ← CHANGE TO YOUR NUMBER (digits only, no +)
-const OWNER = PHONE_NUMBER + '@s.whatsapp.net';
+const PHONE_NUMBER = '2348028270978'; // ← CHANGE TO YOUR NUMBER (digits only, no +)
+const OWNER = PHONE_NUMBER + '2348028270978@s.whatsapp.net';
 
 const AUTH_FOLDER = './auth_info';
 
