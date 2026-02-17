@@ -1,16 +1,20 @@
 {
   "name": "mstarbot",
-  "version": "1.0.0",
-  "description": "MSTARBOT by Mr. Emmanuel 🌹 - Full WhatsApp Bot",
+  "version": "2.0.0",
+  "description": "MSTARBOT v2.0 by Mr. Emmanuel 🌹 - Full WhatsApp Bot with advanced menu & pairing",
   "main": "index.js",
   "type": "commonjs",
   "scripts": {
     "start": "node index.js"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
-    "@whiskeysockets/baileys": "^7.0.0",
+    "@whiskeysockets/baileys": "^7.21.2",
     "@hapi/boom": "^10.0.1",
     "pino": "^9.5.0",
-    "axios": "^1.7.7"
+    "axios": "^1.7.7",
+    "moment-timezone": "^0.5.43"
   }
 }
