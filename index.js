@@ -1,238 +1,538 @@
-// ====================== MSTARBOT v2.0 ======================
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, Browsers } = require('@whiskeysockets/baileys');
 const { Boom } = require('@hapi/boom');
 const pino = require('pino');
 const axios = require('axios');
 const fs = require('fs');
-const moment = require('moment-timezone');
 
-const PHONE_NUMBER = '2347012345678'; // ← CHANGE TO YOUR NUMBER
-const OWNER = PHONE_NUMBER + '@s.whatsapp.net';
+const PHONE_NUMBER = '2349060245012'; // ← CHANGE TO YOUR NUMBER (digits only)
+const OWNER = PHONE_NUMBER + '2349060245012@s.whatsapp.net';
+
 const AUTH_FOLDER = './auth_info';
+const DATA_FILE = './userData.json';
+
+let userData = {};
+if (fs.existsSync(DATA_FILE)) {
+  userData = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+}
+function saveData() {
+  fs.writeFileSync(DATA_FILE, JSON.stringify(userData, null, 2));
+}
 
 let pairingRequested = false;
-const userStates = new Map(); // For quiz game
 
-// Sample quiz questions
-const quizQuestions = [
-    { q: "What is the capital of Nigeria?", options: ["Lagos", "Abuja", "Kano", "Port Harcourt"], a: 1 },
-    { q: "Which is the largest planet?", options: ["Earth", "Mars", "Jupiter", "Saturn"], a: 2 },
-    { q: "What is 15 + 27?", options: ["32", "42", "52", "62"], a: 1 },
-    { q: "Who painted Mona Lisa?", options: ["Van Gogh", "Picasso", "Da Vinci", "Rembrandt"], a: 2 },
-    { q: "What is the currency of Japan?", options: ["Yuan", "Won", "Yen", "Ringgit"], a: 2 }
-];
-
-// Jokes array
-const jokes = [
-    "Why don't programmers prefer dark mode? Because light attracts bugs! 😆",
-    "Why did the scarecrow win an award? He was outstanding in his field! 🌾",
-    "Parallel lines have so much in common... it's a shame they'll never meet. 😢"
-];
-
-// ------------------- START BOT -------------------
 async function startBot() {
-    const { state, saveCreds } = await useMultiFileAuthState(AUTH_FOLDER);
-    const { version } = await fetchLatestBaileysVersion();
+  const { state, saveCreds } = await useMultiFileAuthState(AUTH_FOLDER);
+  const { version } = await fetchLatestBaileysVersion();
 
-    const sock = makeWASocket({
-        version,
-        auth: state,
-        printQRInTerminal: false,
-        logger: pino({ level: 'silent' }),
-        browser: Browsers.macOS('Desktop'),
-        markOnlineOnConnect: false,
-    });
+  const sock = makeWASocket({
+    version,
+    auth: state,
+    printQRInTerminal: false,
+    logger: pino({ level: 'silent' }),
+    browser: Browsers.macOS('M STAR BOT'),
+    markOnlineOnConnect: false,
+  });
 
-    sock.ev.on('creds.update', saveCreds);
+  sock.ev.on('creds.update', saveCreds);
 
-    sock.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect } = update;
+  sock.ev.on('connection.update', async (update) => {
+    const { connection, lastDisconnect, qr } = update;
 
-        // ------------------- PAIRING -------------------
-        if ((connection === 'connecting') && !pairingRequested) {
-            pairingRequested = true;
-            if (!sock.authState.creds.registered) {
-                try {
-                    const code = await sock.requestPairingCode(PHONE_NUMBER);
-                    const formatted = code.match(/.{1,4}/g)?.join('-') || code;
-                    console.log('\n🔥════════════════════════════════════════════');
-                    console.log(`   MSTARBOT PAIRING CODE: ${formatted}`);
-                    console.log('════════════════════════════════════════════');
-                    console.log('📱 Steps to link:');
-                    console.log('1. Open WhatsApp on your phone');
-                    console.log('2. Settings → Linked Devices → Link a Device');
-                    console.log('3. Tap "Link with phone number instead"');
-                    console.log(`4. Enter the MSTARBOT code above\n`);
-                } catch (e) {
-                    console.log('Pairing error:', e.message);
-                }
-            }
+    if ((connection === 'connecting' || qr) && !pairingRequested) {
+      pairingRequested = true;
+      if (!sock.authState.creds.registered) {
+        try {
+          const code = await sock.requestPairingCode(PHONE_NUMBER);
+          const formatted = code.match(/.{1,4}/g)?.join('-') || code;
+          console.log('\n🔥════════════════════════════════════════════');
+          console.log(`   M STAR BOT PAIRING CODE: ${formatted}`);
+          console.log('════════════════════════════════════════════');
+          console.log('📱 WhatsApp → Settings → Linked Devices → "Link with phone number instead"');
+          console.log('Paste the code above (valid 60 seconds)\n');
+        } catch (e) {
+          console.log('Pairing error:', e.message);
         }
+      }
+    }
 
-        if (connection === 'close') {
-            const shouldReconnect = lastDisconnect?.error instanceof Boom
-                ? lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut
-                : true;
-            if (shouldReconnect) {
-                console.log('Reconnecting in 3s...');
-                setTimeout(startBot, 3000);
-            }
-        } else if (connection === 'open') {
-            console.log('✅ MSTARBOT IS NOW ONLINE! 🌟');
-            await sock.sendMessage(OWNER, { text: '🚀 *MSTARBOT v2.0 ACTIVATED*\nBy Mr. Emmanuel 🌹\nType /menu to begin!' });
-        }
-    });
+    if (connection === 'close') {
+      const statusCode = lastDisconnect?.error instanceof Boom ? lastDisconnect.error.output.statusCode : null;
+      const shouldReconnect = statusCode !== DisconnectReason.loggedOut && statusCode !== DisconnectReason.badSession;
+      console.log(`Connection closed (${statusCode}). Reconnecting...`);
+      if (shouldReconnect) setTimeout(startBot, 4000);
+    } else if (connection === 'open') {
+      console.log('✅ M STAR BOT V1 ONLINE – By Mr. Emmanuel 🌹');
+      await sock.sendMessage(OWNER, { text: '🚀 *M STAR BOT v1 ACTIVATED*\nType /menu everywhere!' });
+    }
+  });
 
-    // ------------------- MESSAGES HANDLER -------------------
-    sock.ev.on('messages.upsert', async ({ messages }) => {
-        for (const m of messages) {
-            if (!m.message || m.key.fromMe) continue;
-            const from = m.key.remoteJid;
-            const text = (m.message.conversation || m.message.extendedTextMessage?.text || '').trim();
-            const lowerText = text.toLowerCase();
-            const cmd = lowerText.split(' ')[0];
-            const args = text.slice(cmd.length + 1).trim();
+  sock.ev.on('messages.upsert', async ({ messages }) => {
+    for (const m of messages) {
+      if (!m.message || m.key.fromMe) continue;
 
-            // ------------------- MENU COMMAND -------------------
-            if (cmd === '/menu' || cmd === '/help') {
-                const date = moment().tz('Africa/Lagos');
-                const userName = m.pushName || 'User';
-                const prefix = '/';
-                const botVersion = 'EF-PRIME-MD-ULTRA';
-                const totalCommands = 546;
+      const from = m.key.remoteJid;
+      const pushName = m.pushName || from.split('@')[0];
+      const text = (m.message.conversation || m.message.extendedTextMessage?.text || '').trim();
 
-                const menu = `╭─❒ ❀ *M star bot* ❒
-├⬡ 👤 User: ${userName}
-├⬡ 🆔 ID: @⁨Mr. Emmanuel 🌹⁩
-├⬡ 👑 Status: FREE
-├⬡ 🎫 Limit: 100
-├⬡ 💰 Money: 10.000
-├⬡ 🌐 Prefix: ${prefix}
-├⬡ 🤖 Bot: Authur
-├⬡ 👨‍💻 Owner: @145917739024404
+      if (!text.startsWith('/')) continue;
+
+      const args = text.slice(1).trim().split(' ');
+      const cmd = args.shift().toLowerCase();
+      const q = args.join(' ');
+
+      if (!userData[from]) {
+        userData[from] = { name: pushName, limit: 1000, money: 10000, status: 'FREE', lastClaim: 0 };
+        saveData();
+      }
+      const user = userData[from];
+
+      const now = new Date();
+      const options = { timeZone: 'Africa/Lagos' };
+      const time = now.toLocaleTimeString('en-NG', options);
+      const date = now.toLocaleDateString('en-NG', options);
+      const day = now.toLocaleString('en-NG', { weekday: 'long', timeZone: 'Africa/Lagos' });
+
+      if (cmd === 'menu' || cmd === 'help') {
+        const menu = `╭─❒ ✦ *M STAR BOT* ❒
+├⬡ 👤 User: ${pushName}
+├⬡ 🆔 ID: ${from.split('@')[0]}
+├⬡ 👑 Status: ${user.status}
+├⬡ 🎫 Limit: ${user.limit}
+├⬡ 💰 Money: ${user.money.toLocaleString()}
+├⬡ 🌐 Prefix: /
+├⬡ 🤖 Bot: M STAR BOT 
+├⬡ 👨‍💻 Owner: Mr. Emmanuel 🌹
 ├⬡ 🔄 Mode: Public
-├⬡ 📅 Date: ${date.format('DD/MM/YYYY')}
-├⬡ 📆 Day: ${date.format('dddd')}
-├⬡ ⏰ Time: ${date.format('HH:mm:ss')} WIB
+├⬡ 📅 Date: ${date}
+├⬡ 📆 Day: ${day}
+├⬡ ⏰ Time: ${time}
 ╰────────────❒
 
 ╭────❒ *⚙️ SETTINGS* ❒
-├⬡ ${prefix}bot set
-├⬡ ${prefix}group set
+├⬡ /bot set
+├⬡ /group set
 ╰────────────❒
 
-╭────❒ *⭐ STAR CORE* ❒
-├⬡ ${prefix}profile
-├⬡ ${prefix}claim
-├⬡ ${prefix}buy
-├⬡ ${prefix}transfer
-├⬡ ${prefix}leaderboard
-├⬡ ${prefix}request
-├⬡ ${prefix}react
-├⬡ ${prefix}tagme
-├⬡ ${prefix}runtime
-├⬡ ${prefix}features
-├⬡ ${prefix}speed
-├⬡ ${prefix}ping
-├⬡ ${prefix}afk
-├⬡ ${prefix}rvo
-├⬡ ${prefix}inspect
-├⬡ ${prefix}addmsg
-├⬡ ${prefix}delmsg
-├⬡ ${prefix}getmsg
-├⬡ ${prefix}listmsg
-├⬡ ${prefix}quoted
-├⬡ ${prefix}menfes
-├⬡ ${prefix}confes
-├⬡ ${prefix}autoai
-├⬡ ${prefix}delautoai
-├⬡ ${prefix}rentbot 🅟
-├⬡ ${prefix}stoprent
-├⬡ ${prefix}listrent
-├⬡ ${prefix}donasi
-├⬡ ${prefix}addsewa
-├⬡ ${prefix}delsewa
-├⬡ ${prefix}listsewa
+╭────❒ *⭐ PRIME CORE* ❒
+├⬡ /profile
+├⬡ /claim
+├⬡ /buy
+├⬡ /transfer
+├⬡ /leaderboard
+├⬡ /request
+├⬡ /react
+├⬡ /tagme
+├⬡ /runtime
+├⬡ /features
+├⬡ /speed
+├⬡ /ping
+├⬡ /afk
+├⬡ /rvo
+├⬡ /inspect
+├⬡ /addmsg
+├⬡ /delmsg
+├⬡ /getmsg
+├⬡ /listmsg
+├⬡ /quoted
+├⬡ /menfes
+├⬡ /confes
+├⬡ /autoai
+├⬡ /delautoai
+├⬡ /rentbot 🅟
+├⬡ /stoprent
+├⬡ /listrent
+├⬡ /donasi
+├⬡ /addsewa
+├⬡ /delsewa
+├⬡ /listsewa
 ╰────────────❒
 
+╭────❒ *🛡️ GROUP CONTROL* ❒
+├⬡ /add
+├⬡ /kick
+├⬡ /promote
+├⬡ /demote
+├⬡ /warn
+├⬡ /unwarn
+├⬡ /setname
+├⬡ /setdesc
+├⬡ /setppgc
+├⬡ /delete
+├⬡ /linkgrup
+├⬡ /revoke
+├⬡ /tagall
+├⬡ /pin
+├⬡ /unpin
+├⬡ /hidetag
+├⬡ /totag
+├⬡ /listonline
+├⬡ /group set
+├⬡ /group
+╰────────────❒
+
+╭────❒ *🎨 TEXTPRO FORGE* ❒
+├⬡ /mascot
+├⬡ /foggy
+├⬡ /galaxy
+├⬡ /golden
+├⬡ /mettalic
+├⬡ /gradient
+├⬡ /metal
+├⬡ /jewel
+├⬡ /gaming
+├⬡ /sand
+├⬡ /blackpink
+├⬡ /colorful
+├⬡ /matirx
+├⬡ /wings
+├⬡ /hacker
+├⬡ /logo
+├⬡ /typo
+╰────────────❒
+
+╭────❒ *🔍 SEARCH ENGINE* ❒
+├⬡ /ytsearch
+├⬡ /spotify
+├⬡ /pixiv
+├⬡ /pinterest
+├⬡ /wallpaper
+├⬡ /ringtone
+├⬡ /google
+├⬡ /bing
+├⬡ /gimage
+├⬡ /bingimg
+├⬡ /wattpad
+├⬡ /wikipedia
+├⬡ /technews
+├⬡ /trends
+├⬡ /npm
+├⬡ /style
+├⬡ /weather
+├⬡ /tenor
+├⬡ /urban
+├⬡ /lyrics 
+╰────────────❒
+
+╭────❒ *📥 DOWNLOAD HUB* ❒
+├⬡ /ytmp3
+├⬡ /ytmp4
+├⬡ /instagram
+├⬡ /tiktok
+├⬡ /tiktokmp3
+├⬡ /twitter
+├⬡ /facebook
+├⬡ /spotifydl
+├⬡ /mediafire
+╰────────────❒
+
+╭────❒ *💭 WISDOM QUOTES* ❒
+├⬡ /motivation
+├⬡ /islamic
+├⬡ /quotes
+├⬡ /funfact
+├⬡ /lifehack
+├⬡ /pickup
+├⬡ /program
+├⬡ /tech
+├⬡ /why
+╰────────────❒
+
+╭────❒ *🛠️ UTILITY TOOLS* ❒
+├⬡ /get 🅟
+├⬡ /hd
+├⬡ /define
+├⬡ /toaudio
+├⬡ /tomp3
+├⬡ /tovn
+├⬡ /toimage
+├⬡ /toptv
+├⬡ /tourl
+├⬡ /tts
+├⬡ /toqr
+├⬡ /brat
+├⬡ /bratvid
+├⬡ /ssweb 🅟
+├⬡ /sticker
+├⬡ /colong
+├⬡ /smeme
+├⬡ /dehaze
+├⬡ /colorize
+├⬡ /toblock
+├⬡ /emojimix
+├⬡ /nulis
+├⬡ /readmore
+├⬡ /qc
+├⬡ /translate
+├⬡ /wasted
+├⬡ /triggered
+├⬡ /shorturl
+├⬡ /gitclone
+├⬡ /fat
+├⬡ /fast
+├⬡ /bass
+├⬡ /slow
+├⬡ /tupai
+├⬡ /deep
+├⬡ /robot
+├⬡ /blown
+├⬡ /reverse
+├⬡ /smooth
+├⬡ /earrape
+├⬡ /nightcore
+├⬡ /getexif
+╰────────────❒
+
+╭────❒ *🤖 AI NEURAL NET* ❒
+├⬡ /ai
+├⬡ /simi
+├⬡ /gemini
+├⬡ /txt2img
+╰────────────❒
+
+╭────❒ *🌸 ANIME DIMENSION* ❒
+├⬡ /waifu
+├⬡ /neko
+├⬡ /akiyama
+├⬡ /akira
+├⬡ /anna
+├⬡ /asuna
+├⬡ /boruto
+├⬡ /chiho
+├⬡ /cosplay
+├⬡ /eba
+├⬡ /emilia
+├⬡ /erza
+├⬡ /hinata
+├⬡ /isuzu
+├⬡ /itachi
+├⬡ /mikasa
+├⬡ /miku
+├⬡ /naruto
+├⬡ /sagiri
+├⬡ /sasuke
+├⬡ /yuri
+╰────────────❒
+
+╭────❒ *🎮 GAME ARENA* ❒
+├⬡ /tictactoe
+├⬡ /akinator
+├⬡ /suit
+├⬡ /slot
+├⬡ /mathquiz
+├⬡ /begal
+├⬡ /snakeladder
+├⬡ /blackjack
+├⬡ /catur
+├⬡ /casino
+├⬡ /samgong
+├⬡ /rampok
+├⬡ /riddle
+├⬡ /guesslyrics
+├⬡ /guessword
+├⬡ /guessbomb
+├⬡ /arrangeword
+├⬡ /colorblind
+├⬡ /guesschemistry
+├⬡ /trivia
+├⬡ /guessnumber
+├⬡ /guesscountry
+├⬡ /guesspicture
+├⬡ /Flag
+╰────────────❒
+
+╭────❒ *🎪 FUN ZONE* ❒
+├⬡ /tryluck
+├⬡ /dice
+├⬡ /canthey
+├⬡ /isit
+├⬡ /when
+├⬡ /who
+├⬡ /magicshell
+├⬡ /checkdeath
+├⬡ /checkpersonality
+├⬡ /checkguardian
+├⬡ /rate
+├⬡ /mysoulmate
+├⬡ /couple
+├⬡ /frame
+├⬡ /halah
+├⬡ /hilih
+├⬡ /huluh
+├⬡ /heleh
+├⬡ /holoh
+╰────────────❒
+
+╭────❒ *🎲 RANDOM GALLERY* ❒
+├⬡ /coffe
+├⬡ /technology
+├⬡ /programming
+├⬡ /cyberspace
+├⬡ /mountain
+├⬡ /islamic
+├⬡ /game
+├⬡ /ronaldo
+├⬡ /messi
+╰────────────❒
+
+╭────❒ *🕵️ CYBER STALKER* ❒
+├⬡ /wastalk
+├⬡ /telestalk
+├⬡ /igstalk
+├⬡ /tiktokstalk
+├⬡ /npmstalk
+├⬡ /githubstalk
+├⬡ /genshinstalk
+╰────────────❒
+
+╭────❒ *⚡ OWNER CONTROL* ❒
+├⬡ /bot [set]
+├⬡ /setbio
+├⬡ /setppbot
+├⬡ /setting
+├⬡ /join
+├⬡ /leave
+├⬡ /block
+├⬡ /listblock
+├⬡ /unblock
+├⬡ /listpc
+├⬡ /listgc
+├⬡ /ban
+├⬡ /unban
+├⬡ /mute
+├⬡ /unmute
+├⬡ /creategc
+├⬡ /clearchat
+├⬡ /addprem
+├⬡ /delprem
+├⬡ /listprem
+├⬡ /addlimit
+├⬡ /addmoney
+├⬡ /getmsgstore
+├⬡ /bot --settings
+├⬡ /bot settings
+├⬡ /getsession
+├⬡ /delsession
+├⬡ /delfrankdb
+├⬡ /upsw
+├⬡ /backup
+├⬡ $ 🅞
+├⬡ > 🅞
+├⬡ < 🅞
+╰────────────❒
 
 ╭─────────❒
-├⬡ Total Commands: ${totalCommands}
-├⬡ Bot Version: ${botVersion}
-├⬡ Current Prefix: ${prefix}
-├⬡ 💡 *TIP:* Use \`${prefix}help <command>\` for detailed info
+├⬡ Total Commands: 100 
+├⬡ Bot Version: *M STAR BOT V1*
+├⬡ Current Prefix: /
+├⬡ 💡 *TIP:* Use /help <command> for detailed info
 ╰────────────❒
-*${botVersion}* 
-
+*M STAR BOT* - 
+ 
 > 😎 *Mr. Emmanuel 🌹*`;
 
-                await sock.sendMessage(from, { text: menu });
-            }
+        await sock.sendMessage(from, { text: menu });
+      }
 
-            // ------------------- OWNER -------------------
-            else if (cmd === '/owner') {
-                await sock.sendMessage(from, { text: '👑 *Bot Owner*\nMr. Emmanuel 🌹\nCreator of MSTARBOT\nThank you for using it!' });
-            }
+      // WORKING COMMANDS
+      else if (cmd === 'ping' || cmd === 'speed') {
+        const start = Date.now();
+        await sock.sendMessage(from, { text: '🏓 Pinging...' });
+        await sock.sendMessage(from, { text: `✅ *M STAR BOT Speed: ${Date.now() - start}ms*` });
+      }
 
-            // ------------------- QUIZ -------------------
-            else if (cmd === '/quiz') {
-                if (userStates.has(from)) return await sock.sendMessage(from, { text: 'You already have an active quiz! Type /endquiz first.' });
-                const q = quizQuestions[0];
-                userStates.set(from, { index: 0, score: 0 });
-                let msg = `🧠 *MSTARBOT Quiz Started!*\n\nQ1: ${q.q}\n`;
-                q.options.forEach((opt, i) => msg += `${i + 1}. ${opt}\n`);
-                msg += '\nReply with the number (1-4)';
-                await sock.sendMessage(from, { text: msg });
-            } else if (cmd === '/endquiz') {
-                if (!userStates.has(from)) return await sock.sendMessage(from, { text: 'No active quiz!' });
-                const state = userStates.get(from);
-                await sock.sendMessage(from, { text: `🏆 Quiz ended! Your score: ${state.score}/${quizQuestions.length}` });
-                userStates.delete(from);
-            }
+      else if (cmd === 'profile') {
+        await sock.sendMessage(from, { text: `╭─❒ *YOUR PROFILE* ❒\n├ Name: ${user.name}\n├ Limit: ${user.limit}\n├ Money: ${user.money}\n├ Status: ${user.status}\n╰────────────❒` });
+      }
 
-            // ------------------- FUN -------------------
-            else if (cmd === '/joke') {
-                const joke = jokes[Math.floor(Math.random() * jokes.length)];
-                await sock.sendMessage(from, { text: `😂 ${joke}` });
-            }
+      else if (cmd === 'claim') {
+        if (Date.now() - user.lastClaim < 86400000) return sock.sendMessage(from, { text: '⏳ Claim again after 24 hours!' });
+        user.money += 5000;
+        user.limit += 50;
+        user.lastClaim = Date.now();
+        saveData();
+        sock.sendMessage(from, { text: '✅ Claimed!\n+5000 Money\n+50 Limit' });
+      }
 
-            // ------------------- QUIZ ANSWER HANDLER -------------------
-            if (userStates.has(from) && !isNaN(parseInt(text)) && text.length === 1) {
-                const state = userStates.get(from);
-                const currentQ = quizQuestions[state.index];
-                const answer = parseInt(text) - 1;
+      else if (cmd === 'dice') {
+        const roll = Math.floor(Math.random() * 6) + 1;
+        sock.sendMessage(from, { text: `🎲 You rolled: *${roll}*` });
+      }
 
-                let reply = '';
-                if (answer === currentQ.a) {
-                    state.score++;
-                    reply = '✅ Correct!';
-                } else {
-                    reply = `❌ Wrong! Correct answer: ${currentQ.options[currentQ.a]}`;
-                }
-
-                state.index++;
-                if (state.index < quizQuestions.length) {
-                    const nextQ = quizQuestions[state.index];
-                    let msg = `${reply}\n\nQ${state.index + 1}: ${nextQ.q}\n`;
-                    nextQ.options.forEach((opt, i) => msg += `${i + 1}. ${opt}\n`);
-                    msg += '\nReply with the number (1-4)';
-                    await sock.sendMessage(from, { text: msg });
-                } else {
-                    await sock.sendMessage(from, { text: `🏆 Quiz Complete!\nYour final score: ${state.score}/${quizQuestions.length}\nType /quiz to play again!` });
-                    userStates.delete(from);
-                }
-            }
+      else if (cmd === 'txt2img') {
+        if (!q) return sock.sendMessage(from, { text: 'Usage: /txt2img beautiful sunset' });
+        sock.sendMessage(from, { text: '🎨 Generating with M STAR BOT AI...' });
+        try {
+          const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(q)}?width=1024&height=1024`;
+          await sock.sendMessage(from, { image: { url }, caption: `✅ Generated by M STAR BOT\nPrompt: ${q}` });
+        } catch (e) {
+          sock.sendMessage(from, { text: '❌ Image generation failed. Try again.' });
         }
-    });
+      }
 
-    // ------------------- KEEPALIVE -------------------
-    setInterval(() => {
-        sock.sendMessage(OWNER, { text: '🛡️ MSTARBOT is still protecting & entertaining you on KataBump!' });
-    }, 1800000);
+      else if (cmd === 'ai') {
+        if (!q) return sock.sendMessage(from, { text: 'Usage: /ai how are you' });
+        sock.sendMessage(from, { text: '🤖 M STAR BOT AI Thinking...' });
+        try {
+          const res = await axios.get(`https://api.akuari.my.id/ai/gpt?prompt=${encodeURIComponent(q)}`);
+          await sock.sendMessage(from, { text: `🤖 *M STAR BOT AI*\n\n${res.data.result || res.data.message || 'No response'}` });
+        } catch (e) {
+          sock.sendMessage(from, { text: `🤖 M STAR BOT: ${q}\n\n(Full AI coming in V2 – Mr. Emmanuel 🌹)` });
+        }
+      }
+
+      else if (cmd === 'waifu' || cmd === 'neko' || cmd === 'miku') {
+        try {
+          const res = await axios.get('https://api.waifu.pics/waifu');
+          await sock.sendMessage(from, { image: { url: res.data.url }, caption: `🌸 ${cmd.toUpperCase()} from M STAR BOT` });
+        } catch (e) {
+          sock.sendMessage(from, { text: '🌸 Anime image coming soon!' });
+        }
+      }
+
+      else if (cmd === 'runtime') {
+        const uptime = process.uptime();
+        const h = Math.floor(uptime / 3600);
+        const m = Math.floor((uptime % 3600) / 60);
+        sock.sendMessage(from, { text: `⏱️ M STAR BOT has been running for ${h}h ${m}m on KataBump` });
+      }
+
+      else if (cmd === 'owner') {
+        sock.sendMessage(from, { text: '👑 Owner: Mr. Emmanuel 🌹\nCreator of M STAR BOT, Racing Game & Anti-Bug Bot' });
+      }
+
+      // Group commands example (bot must be admin)
+      else if (cmd === 'add' && from.endsWith('@g.us')) {
+        const num = q.replace(/[^0-9]/g, '') + '@s.whatsapp.net';
+        try {
+          await sock.groupParticipantsUpdate(from, [num], 'add');
+          sock.sendMessage(from, { text: '✅ Added!' });
+        } catch (e) {
+          sock.sendMessage(from, { text: '❌ Failed (bot must be admin)' });
+        }
+      }
+
+      else if (cmd === 'kick' && from.endsWith('@g.us')) {
+        const num = q.replace(/[^0-9]/g, '') + '@s.whatsapp.net';
+        try {
+          await sock.groupParticipantsUpdate(from, [num], 'remove');
+          sock.sendMessage(from, { text: '✅ Kicked!' });
+        } catch (e) {
+          sock.sendMessage(from, { text: '❌ Failed (bot must be admin)' });
+        }
+      }
+
+      else {
+        sock.sendMessage(from, { text: `Command /${cmd} is ready in menu!\nFull feature coming in V2 by Mr. Emmanuel 🌹\n\nType /menu` });
+      }
+    }
+  });
+
+  setInterval(() => {
+    sock.sendMessage(OWNER, { text: '🛡️ M STAR BOT still running perfectly on KataBump!' });
+  }, 1800000);
 }
 
-// ------------------- START -------------------
 startBot().catch(err => {
-    console.error('Fatal:', err);
-    process.exit(1);
+  console.error('Error:', err);
+  setTimeout(startBot, 5000);
 });
