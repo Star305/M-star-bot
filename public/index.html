@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Mr Emmanuel Deployment Site</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="core">
+    <div class="ring r1"></div>
+    <div class="ring r2"></div>
+    <div class="ring r3"></div>
+  </div>
+  <h2>INITIALIZING DEPLOYMENT MATRIX</h2>
+</div>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="logo">
+    <img src="YOUR_LOGO_LINK_HERE">
+    <span>Mr Emmanuel Deployment Site</span>
+  </div>
+  <div class="links">
+    <a href="#">Home</a>
+    <a href="#">Web Hosting</a>
+    <a href="#">Bot Deployment</a>
+    <a href="#">My Panels</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <h1>Deploy Anything Instantly</h1>
+  <p>Unlimited Web & Bot Panels • Powered by Render</p>
+  <button onclick="openModal()">CREATE PANEL</button>
+</section>
+
+<!-- PANELS -->
+<section class="panels">
+  <h2>My Active Panels</h2>
+  <div id="panelList"></div>
+</section>
+
+<!-- MODAL -->
+<div id="modal">
+  <form id="deployForm">
+    <input name="panelName" placeholder="Panel Name" required>
+    <select name="type">
+      <option value="web">Web</option>
+      <option value="bot">Bot</option>
+    </select>
+    <input name="repoUrl" placeholder="GitHub URL">
+    <p>OR</p>
+    <input type="file" name="zipFile" accept=".zip">
+    <button type="submit">DEPLOY NOW</button>
+  </form>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-links">
+    <a href="#">Twitter</a>
+    <a href="#">GitHub</a>
+    <a href="#">Render</a>
+    <a href="#">Support</a>
+  </div>
+  <p>© 2026 Mr Emmanuel Deployment Site • Made in Abuja</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
