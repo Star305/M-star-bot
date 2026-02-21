@@ -1,75 +1,311 @@
-i<!DOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Mr Emmanuel Deployment Site - Deploy unlimited websites, Discord bots, Telegram bots & more instantly on Render. Built by Emmanuel.">
 <title>Mr Emmanuel Deployment Site</title>
-<link rel="stylesheet" href="style.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
+:root {
+  --primary: 59 130 246;
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background-color: #0f0f0f; color: #fff; }
+.title-font { font-family: 'Space Grotesk', sans-serif; }
+
+/* Loader */
+.loader-container { position: fixed; inset: 0; background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%); display: flex; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.8s cubic-bezier(0.4,0,1,1); }
+.loader-core { position: relative; width: 120px; height: 120px; }
+.loader-ring { position: absolute; inset: 0; border: 6px solid transparent; border-top-color: rgb(var(--primary)); border-radius: 9999px; animation: spin 1.2s linear infinite; }
+.loader-ring:nth-child(2) { border-top-color: rgb(147 51 234); animation-duration: 1.8s; transform: rotate(45deg); }
+.loader-ring:nth-child(3) { border-top-color: rgb(236 72 153); animation-duration: 2.4s; transform: rotate(90deg); }
+.loader-glow { position: absolute; inset: -30px; background: radial-gradient(circle, rgba(59,130,246,0.4) 0%, transparent 70%); animation: pulse-glow 3s ease-in-out infinite; border-radius: 9999px; filter: blur(40px); }
+.loader-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: #fff; font-size: 13px; letter-spacing: 4px; font-weight: 600; text-transform: uppercase; animation: text-pulse 2s ease-in-out infinite; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes pulse-glow { 0%,100%{opacity:0.6; transform:scale(0.8);} 50%{opacity:1; transform:scale(1.15);} }
+@keyframes text-pulse { 0%,100%{opacity:0.7;} 50%{opacity:1;} }
+
+/* Glass & Neon */
+.glass { background: rgba(255,255,255,0.06); backdrop-filter: blur(16px); border:1px solid rgba(255,255,255,0.1); }
+.neon-button { position: relative; overflow: hidden; }
+.neon-button::after { content: ''; position: absolute; top:-50%; left:-50%; width:40%; height:400%; background: linear-gradient(90deg,transparent, rgba(255,255,255,0.4),transparent); transform: skewX(-25deg); animation: shimmer 4s infinite; }
+@keyframes shimmer { 0% { transform: translateX(-150%) skewX(-25deg); } 100% { transform: translateX(300%) skewX(-25deg); } }
+
+/* Card hover lift */
+.deploy-card { transition: all 0.4s cubic-bezier(0.4,0,0.2,1); }
+.deploy-card:hover { transform: translateY(-12px) scale(1.03); box-shadow: 0 0 0 4px rgba(59,130,246,0.3); }
+
+/* Terminal style */
+.terminal { font-family: ui-monospace, monospace; background: #0a0a0a; border: 1px solid #22c55e; }
+</style>
 </head>
-<body>
+<body class="overflow-x-hidden">
 
 <!-- LOADER -->
-<div id="loader">
-  <div class="core">
-    <div class="ring r1"></div>
-    <div class="ring r2"></div>
-    <div class="ring r3"></div>
+<div id="loader" class="loader-container">
+  <div class="text-center">
+    <div class="loader-core mx-auto">
+      <div class="loader-ring"></div>
+      <div class="loader-ring"></div>
+      <div class="loader-ring"></div>
+      <div class="loader-glow"></div>
+    </div>
+    <div class="mt-8">
+      <div class="loader-text flex items-center justify-center gap-2">
+        <span>INITIALIZING</span>
+        <span class="animate-pulse">DEPLOYMENT MATRIX</span>
+      </div>
+      <div class="mt-3 text-[10px] tracking-[3px] text-zinc-500 font-mono">MR EMMANUEL • POWERED BY RENDER</div>
+    </div>
   </div>
-  <h2>INITIALIZING DEPLOYMENT MATRIX</h2>
 </div>
 
 <!-- NAVBAR -->
-<nav>
-  <div class="logo">
-    <img src="https://i.postimg.cc/X7MNb445/Screenshot-20260218-120313.png">
-    <span>Mr Emmanuel Deployment Site</span>
-  </div>
-  <div class="links">
-    <a href="#">Home</a>
-    <a href="#">Web Hosting</a>
-    <a href="#">Bot Deployment</a>
-    <a href="#">My Panels</a>
+<nav class="fixed top-0 left-0 right-0 z-50 glass border-b border-white/10">
+  <div class="max-w-screen-2xl mx-auto px-8 py-5 flex items-center justify-between">
+    <div class="flex items-center gap-x-3">
+      <img src="https://i.postimg.cc/X7MNb445/Screenshot-20260218-120313.png" alt="Logo" class="h-11 w-11 object-contain rounded-2xl shadow-2xl shadow-blue-500/50">
+      <div>
+        <span class="title-font text-3xl font-bold tracking-tighter bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">Mr Emmanuel</span>
+        <span class="block text-[10px] text-zinc-500 -mt-1 font-mono tracking-widest">DEPLOYMENT SITE</span>
+      </div>
+    </div>
+    <div class="hidden md:flex items-center gap-x-10 text-sm font-medium">
+      <a href="#home" class="hover:text-blue-400 transition-colors">Home</a>
+      <a href="#web" class="hover:text-blue-400 transition-colors">Web Hosting</a>
+      <a href="#bot" class="hover:text-blue-400 transition-colors">Bot Deployment</a>
+      <a href="#panels" class="hover:text-blue-400 transition-colors">My Panels</a>
+      <a href="#pricing" class="hover:text-blue-400 transition-colors">Pricing</a>
+    </div>
+    <div class="flex items-center gap-x-4">
+      <button onclick="toggleMobileMenu()" class="md:hidden text-2xl"><i class="fa-solid fa-bars"></i></button>
+      <button onclick="showLoginModal()" class="px-6 py-2.5 text-sm font-semibold border border-white/30 rounded-3xl hover:bg-white/10 transition-all">Login</button>
+      <button onclick="showDeployModal()" class="neon-button px-8 py-2.5 bg-blue-600 hover:bg-blue-700 rounded-3xl font-semibold text-sm flex items-center gap-x-2 shadow-lg shadow-blue-500/40"><i class="fa-solid fa-rocket"></i> DEPLOY NOW</button>
+    </div>
   </div>
 </nav>
 
 <!-- HERO -->
-<section class="hero">
-  <h1>Deploy Anything Instantly</h1>
-  <p>Unlimited Web & Bot Panels • Powered by Render</p>
-  <button onclick="openModal()">CREATE PANEL</button>
+<section id="home" class="min-h-screen flex items-center relative pt-20">
+  <div class="absolute inset-0 bg-[radial-gradient(at_top_right,#3b82f610_0%,transparent_50%)]"></div>
+  <div class="max-w-screen-2xl mx-auto px-8 grid md:grid-cols-2 gap-12 items-center">
+    <div class="space-y-8">
+      <div class="inline-flex items-center gap-2 bg-white/5 border border-white/10 rounded-3xl px-5 py-2 text-sm">
+        <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+        <span class="font-mono tracking-widest">NOW SUPPORTS RENDER + UNLIMITED PANELS</span>
+      </div>
+      <h1 class="title-font text-7xl md:text-8xl font-bold leading-none tracking-tighter">
+        DEPLOY ANYTHING.<br>
+        <span class="bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">INSTANTLY.</span>
+      </h1>
+      <p class="text-xl text-zinc-400 max-w-lg">Your personal unlimited deployment hub. Create as many web panels and bots as you want. One-click deploy to Render. Built with love by Emmanuel.</p>
+      <div class="flex flex-wrap gap-4">
+        <button onclick="showDeployModal()" class="neon-button px-10 py-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl font-bold text-xl flex items-center gap-3 hover:scale-105 transition-all shadow-2xl shadow-blue-600/50"><i class="fa-solid fa-bolt-lightning"></i> START FREE DEPLOYMENT</button>
+        <button onclick="document.getElementById('panels').scrollIntoView({ behavior: 'smooth' })" class="px-10 py-6 border border-white/30 rounded-3xl font-semibold text-xl hover:bg-white/5 transition-all">VIEW MY PANELS →</button>
+      </div>
+    </div>
+    <div class="relative hidden md:block">
+      <div class="absolute -inset-20 bg-gradient-to-br from-blue-600/20 to-purple-600/20 blur-3xl rounded-[4rem]"></div>
+      <div class="glass rounded-3xl p-3 shadow-2xl border border-white/10">
+        <div class="bg-zinc-900 rounded-2xl overflow-hidden">
+          <div class="h-11 bg-zinc-950 flex items-center px-4 gap-2">
+            <div class="flex gap-1.5">
+              <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+              <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+              <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+            </div>
+            <div class="mx-auto text-xs font-mono text-zinc-500">dashboard.mremmanuel.site</div>
+          </div>
+          <div class="p-8 text-center">
+            <div class="text-6xl mb-6">🚀</div>
+            <div class="font-mono text-emerald-400 text-sm mb-2">DEPLOYED IN 4.2s</div>
+            <div class="text-3xl font-bold title-font">my-awesome-bot</div>
+            <div class="mt-8 grid grid-cols-3 gap-4 text-center text-xs">
+              <div class="bg-zinc-800/50 p-4 rounded-2xl">
+                <div class="text-emerald-400">99.98%</div>
+                <div class="text-zinc-400">Uptime</div>
+              </div>
+              <div class="bg-zinc-800/50 p-4 rounded-2xl">
+                <div class="text-blue-400">∞</div>
+                <div class="text-zinc-400">Panels</div>
+              </div>
+              <div class="bg-zinc-800/50 p-4 rounded-2xl">
+                <div class="text-purple-400">24/7</div>
+                <div class="text-zinc-400">Support</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="absolute bottom-10 left-1/2 flex flex-col items-center gap-2 text-xs text-zinc-500">
+    <div class="animate-bounce">↓</div>
+    SCROLL FOR POWER
+  </div>
 </section>
 
-<!-- PANELS -->
-<section class="panels">
-  <h2>My Active Panels</h2>
-  <div id="panelList"></div>
+<!-- FEATURES & CARDS (IN BOXES) -->
+<section class="py-24 border-t border-white/10">
+  <div class="max-w-screen-2xl mx-auto px-8">
+    <div class="text-center mb-16">
+      <div class="inline text-blue-400 font-mono text-sm tracking-widest">WHY THOUSANDS CHOOSE US</div>
+      <h2 class="title-font text-6xl font-bold mt-3">Built for unlimited power</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="deploy-card glass rounded-3xl p-8">
+        <div class="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-4xl mb-6">🌐</div>
+        <h3 class="text-3xl font-semibold mb-3">Unlimited Web Panels</h3>
+        <p class="text-zinc-400 leading-relaxed">Host static sites, Next.js, Flask, Django — anything. One-click Render deployment.</p>
+        <div class="mt-10 text-xs font-mono text-blue-400">→ 100% free tier available</div>
+      </div>
+      <div class="deploy-card glass rounded-3xl p-8">
+        <div class="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center text-4xl mb-6">🤖</div>
+        <h3 class="text-3xl font-semibold mb-3">Discord / Telegram Bots</h3>
+        <p class="text-zinc-400 leading-relaxed">Deploy Python, Node.js, Go bots instantly. Auto-restart on crash. Webhooks ready.</p>
+        <div class="mt-10 text-xs font-mono text-purple-400">→ 24/7 uptime guaranteed</div>
+      </div>
+      <div class="deploy-card glass rounded-3xl p-8 border border-blue-500/30">
+        <div class="w-14 h-14 bg-pink-500/10 rounded-2xl flex items-center justify-center text-4xl mb-6">⚡</div>
+        <h3 class="text-3xl font-semibold mb-3">Render-Powered</h3>
+        <p class="text-zinc-400 leading-relaxed">Direct integration. Zero server management. Automatic SSL, logs, domains, scaling.</p>
+        <div class="mt-10 text-xs font-mono text-pink-400">→ Deployed in &lt; 8 seconds</div>
+      </div>
+    </div>
+  </div>
+</section>
+  
+<!-- MY PANELS SECTION -->
+<section id="panels" class="py-24 border-t border-white/10">
+  <div class="max-w-screen-2xl mx-auto px-8">
+    <div class="text-center mb-16">
+      <h2 class="title-font text-6xl font-bold">My Deployment Panels</h2>
+      <p class="text-zinc-400 mt-4">Access all your deployed bots and websites from one dashboard.</p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-8" id="panels-container">
+      <!-- Dynamic panels will be rendered here via JS -->
+    </div>
+  </div>
 </section>
 
-<!-- MODAL -->
-<div id="modal">
-  <form id="deployForm">
-    <input name="panelName" placeholder="Panel Name" required>
-    <select name="type">
-      <option value="web">Web</option>
-      <option value="bot">Bot</option>
-    </select>
-    <input name="repoUrl" placeholder="GitHub URL">
-    <p>OR</p>
-    <input type="file" name="zipFile" accept=".zip">
-    <button type="submit">DEPLOY NOW</button>
-  </form>
-</div>
+<!-- PRICING SECTION -->
+<section id="pricing" class="py-24 border-t border-white/10 bg-zinc-950/50">
+  <div class="max-w-screen-2xl mx-auto px-8 text-center">
+    <h2 class="title-font text-6xl font-bold mb-6">Pricing Plans</h2>
+    <p class="text-zinc-400 mb-12">Choose a plan that fits your deployment needs. Start free and scale up anytime.</p>
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="glass rounded-3xl p-10 deploy-card border border-blue-500/30">
+        <h3 class="text-3xl font-semibold mb-4">Free Tier</h3>
+        <div class="text-4xl font-bold mb-4">0$</div>
+        <ul class="text-zinc-400 mb-8 space-y-2">
+          <li>Unlimited static sites</li>
+          <li>1 bot deployment</li>
+          <li>Community support</li>
+        </ul>
+        <button class="neon-button px-6 py-3 rounded-3xl bg-blue-600 hover:bg-blue-700 font-semibold shadow-lg shadow-blue-500/40">Start Free</button>
+      </div>
+      <div class="glass rounded-3xl p-10 deploy-card border border-purple-500/30">
+        <h3 class="text-3xl font-semibold mb-4">Pro Tier</h3>
+        <div class="text-4xl font-bold mb-4">15$/mo</div>
+        <ul class="text-zinc-400 mb-8 space-y-2">
+          <li>Unlimited web & bot deployments</li>
+          <li>Priority support</li>
+          <li>Custom domains</li>
+        </ul>
+        <button class="neon-button px-6 py-3 rounded-3xl bg-purple-600 hover:bg-purple-700 font-semibold shadow-lg shadow-purple-500/40">Go Pro</button>
+      </div>
+      <div class="glass rounded-3xl p-10 deploy-card border border-pink-500/30">
+        <h3 class="text-3xl font-semibold mb-4">Enterprise</h3>
+        <div class="text-4xl font-bold mb-4">Custom</div>
+        <ul class="text-zinc-400 mb-8 space-y-2">
+          <li>Dedicated servers</li>
+          <li>24/7 expert support</li>
+          <li>Advanced analytics</li>
+        </ul>
+        <button class="neon-button px-6 py-3 rounded-3xl bg-pink-600 hover:bg-pink-700 font-semibold shadow-lg shadow-pink-500/40">Contact Us</button>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- FOOTER -->
-<footer>
-  <div class="footer-links">
-    <a href="#">Twitter</a>
-    <a href="#">GitHub</a>
-    <a href="#">Render</a>
-    <a href="#">Support</a>
-  </div>
-  <p>© 2026 Mr Emmanuel Deployment Site • Made in Abuja</p>
+<footer class="py-12 border-t border-white/10 text-center text-zinc-500 text-sm">
+  &copy; 2026 Mr Emmanuel Deployment Hub. All rights reserved. • Built with ❤️ by Emmanuel
 </footer>
 
-<script src="app.js"></script>
+<!-- DEPLOY & LOGIN MODALS -->
+<div id="deployModal" class="fixed inset-0 bg-black/70 flex items-center justify-center hidden z-50">
+  <div class="glass rounded-3xl p-10 max-w-lg w-full relative">
+    <button onclick="closeDeployModal()" class="absolute top-5 right-5 text-zinc-400 hover:text-white text-xl">&times;</button>
+    <h2 class="title-font text-3xl font-bold mb-6">Start Deployment</h2>
+    <input type="text" placeholder="Enter project name" class="w-full p-4 rounded-2xl mb-4 bg-zinc-900 border border-white/20 text-white">
+    <button class="neon-button px-6 py-3 rounded-3xl bg-blue-600 hover:bg-blue-700 w-full font-semibold shadow-lg shadow-blue-500/40">Deploy Now</button>
+  </div>
+</div>
+
+<div id="loginModal" class="fixed inset-0 bg-black/70 flex items-center justify-center hidden z-50">
+  <div class="glass rounded-3xl p-10 max-w-md w-full relative">
+    <button onclick="closeLoginModal()" class="absolute top-5 right-5 text-zinc-400 hover:text-white text-xl">&times;</button>
+    <h2 class="title-font text-3xl font-bold mb-6">Login</h2>
+    <input type="email" placeholder="Email" class="w-full p-4 rounded-2xl mb-4 bg-zinc-900 border border-white/20 text-white">
+    <input type="password" placeholder="Password" class="w-full p-4 rounded-2xl mb-4 bg-zinc-900 border border-white/20 text-white">
+    <button class="neon-button px-6 py-3 rounded-3xl bg-purple-600 hover:bg-purple-700 w-full font-semibold shadow-lg shadow-purple-500/40">Login</button>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<script>
+  // Loader
+  window.addEventListener('load', () => {
+    const loader = document.getElementById('loader');
+    loader.style.opacity = '0';
+    setTimeout(() => loader.style.display = 'none', 800);
+  });
+
+  // Mobile menu
+  function toggleMobileMenu() {
+    const menu = document.getElementById('mobile-menu');
+    menu.classList.toggle('hidden');
+  }
+
+  // Modals
+  function showDeployModal() { document.getElementById('deployModal').classList.remove('hidden'); }
+  function closeDeployModal() { document.getElementById('deployModal').classList.add('hidden'); }
+  function showLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); }
+  function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); }
+
+  // Smooth scroll
+  document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function(e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  // Example dynamic panels
+  const panels = [
+    { name: 'Awesome Bot', uptime: '99.9%', type: 'Discord', color: 'emerald-400' },
+    { name: 'Next.js Site', uptime: '100%', type: 'Web', color: 'blue-400' },
+    { name: 'Telegram Bot', uptime: '99.8%', type: 'Bot', color: 'purple-400' },
+  ];
+
+  const container = document.getElementById('panels-container');
+  panels.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'deploy-card glass rounded-3xl p-6';
+    card.innerHTML = `
+      <h3 class="text-2xl font-semibold mb-2">${p.name}</h3>
+      <div class="text-sm text-${p.color} mb-1">Uptime: ${p.uptime}</div>
+      <div class="text-zinc-400 text-sm">${p.type} deployment</div>
+    `;
+    container.appendChild(card);
+  });
+</script>
 </body>
-</html>
+  </html>
